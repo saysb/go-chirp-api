@@ -5,11 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"os"
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-const secretPassphrase = "votre-passphrase-très-secrète-ici"
 
 func HashPassword(password string) (string, error) {
     saltedPassword := addSecretSalt(password)
@@ -34,7 +33,7 @@ func VerifyPassword(hashedPwd, plainPwd string) error {
 }
 
 func addSecretSalt(password string) string {
-    h := hmac.New(sha256.New, []byte(secretPassphrase))
+    h := hmac.New(sha256.New, []byte(os.Getenv("PASSWORD_SECRET")))
     h.Write([]byte(password))
     return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
