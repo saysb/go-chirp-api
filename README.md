@@ -14,14 +14,14 @@ Create a `.env` file with the following variables:
 
 ```env
 # Security
-PASSWORD_SECRET=4880d6f2-12d4-4fd5-a590-584c75ac14b0
+PASSWORD_SECRET=your_secret_passphrase
 
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=sebastiendamy
-DB_PASSWORD=xxxxx
-DB_NAME=twitter-clone
+DB_USER=your_postgres_username
+DB_PASSWORD=your_postgres_password
+DB_NAME=your_postgres_db_name
 DB_SSLMODE=disable
 
 # Server
