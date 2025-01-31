@@ -20,7 +20,6 @@ func NewUserHandler(service *services.UserService) *UserHandler {
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
     var userRequest models.CreateUserRequest
 
-    println("hello-world")
 
     if err := json.NewDecoder(r.Body).Decode(&userRequest); err != nil {
         Error(w, http.StatusBadRequest, "Invalid request payload")

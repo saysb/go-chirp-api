@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
 	"twitter-clone-api/internal/database"
 	"twitter-clone-api/internal/handlers"
 	"twitter-clone-api/internal/services"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 )
 
 type App struct {
@@ -18,13 +20,18 @@ type App struct {
 }
 
 func NewApp() *App {
+    // Chargement des variables d'environnement
+    if err := godotenv.Load(); err != nil {
+        log.Println("Warning: .env file not found")
+    }
+
     db, err := database.NewPostgresDB(database.Config{
-        Host:     "localhost",
-        Port:     "5432",
-        User:     "sebastiendamy",
-        Password: "postgres",
-        DBName:   "twitter-clone",
-        SSLMode:  "disable",
+        Host:     os.Getenv("DB_HOST"),
+        Port:     os.Getenv("DB_PORT"),
+        User:     os.Getenv("DB_USER"),
+        Password: os.Getenv("DB_PASSWORD"),
+        DBName:   os.Getenv("DB_NAME"),
+        SSLMode:  os.Getenv("DB_SSLMODE"),
     })
     if err != nil {
         log.Fatal("Failed to connect to database:", err)
@@ -67,8 +74,13 @@ func main() {
     app := NewApp()
     app.SetupRoutes()
 
-    log.Println("Server starting on :8080")
-    if err := http.ListenAndServe(":8080", app.router); err != nil {
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
+    }
+
+    log.Printf("Server starting on :%s", port)
+    if err := http.ListenAndServe(":"+port, app.router); err != nil {
         log.Fatal("Failed to start server:", err)
     }
 }
