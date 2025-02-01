@@ -1,4 +1,4 @@
-package password_utils
+package password
 
 import (
 	"crypto/hmac"

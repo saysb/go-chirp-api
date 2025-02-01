@@ -62,10 +62,8 @@ func (app *App) SetupRoutes() {
         // Users routes
         r.Route("/users", func(r chi.Router) {
             r.Post("/", userHandler.Create)
-            r.Get("/", userHandler.GetAll)
             r.Get("/{id}", userHandler.GetOne)
             r.Put("/{id}", userHandler.Update)
-            r.Delete("/{id}", userHandler.Delete)
         })
     })
 }

@@ -3,8 +3,10 @@ package services
 
 import (
 	"context"
+	"errors"
 	"twitter-clone-api/internal/database"
 	"twitter-clone-api/internal/models"
+	"twitter-clone-api/internal/utils/password"
 )
 
 type UserService struct {
@@ -18,6 +20,18 @@ func NewUserService(repo *database.UserRepository) *UserService {
 }
 
 func (s *UserService) Create(ctx context.Context, user *models.User) error {
+    existingUser, err := s.repo.GetByEmailOrUsername(ctx, user.Email, user.Username)
+    if err != nil {
+        return err
+    }
+    if existingUser != nil {
+        return errors.New("userAlreadyExists")
+    }
+    newPassword, err := password.HashPassword(user.Password)
+    if err != nil {
+        return err
+    }
+    user.Password = newPassword
     return s.repo.Create(ctx, user)
 }
 
@@ -25,14 +39,7 @@ func (s *UserService) GetByID(ctx context.Context, id string) (*models.User, err
     return s.repo.GetByID(ctx, id)
 }
 
-func (s *UserService) GetAll(ctx context.Context) ([]models.User, error) {
-    return s.repo.GetAll(ctx)
-}
 
 func (s *UserService) Update(ctx context.Context, id string, user *models.User) error {
     return s.repo.Update(ctx, id, user)
-}
-
-func (s *UserService) Delete(ctx context.Context, id string) error {
-    return s.repo.Delete(ctx, id)
 }
