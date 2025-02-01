@@ -34,7 +34,12 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
     }
 
     if err := h.service.Create(r.Context(), &user); err != nil {
-        Error(w, http.StatusInternalServerError, err.Error())
+        switch err.Error() {
+        case "userAlreadyExists":
+            Error(w, http.StatusBadRequest, "userAlreadyExists")
+        default:
+            Error(w, http.StatusInternalServerError, err.Error())
+        }
         return
     }
 
@@ -53,15 +58,6 @@ func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
     Success(w, http.StatusOK, user)
 }
 
-func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-    users, err := h.service.GetAll(r.Context())
-    if err != nil {
-        Error(w, http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    Success(w, http.StatusOK, users)
-}
 
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
     id := chi.URLParam(r, "id")
@@ -79,15 +75,4 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
     }
 
     Success(w, http.StatusOK, user)
-}
-
-func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-    id := chi.URLParam(r, "id")
-
-    if err := h.service.Delete(r.Context(), id); err != nil {
-        Error(w, http.StatusInternalServerError, err.Error())
-        return
-    }
-
-    Success(w, http.StatusOK, map[string]string{"message": "User successfully deleted"})
 }

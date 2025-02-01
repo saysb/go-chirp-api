@@ -38,6 +38,28 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
     return nil
 }
 
+func (r *UserRepository) GetByEmailOrUsername(ctx context.Context, email string, username string) (*models.User, error) {
+    user := &models.User{}
+    query := `SELECT id, username, email, created_at, updated_at FROM users WHERE email = $1 OR username = $2`
+
+    err := r.db.QueryRowContext(ctx, query, email, username).Scan(
+        &user.ID,
+        &user.Username,
+        &user.Email,
+        &user.CreatedAt,
+        &user.UpdatedAt,
+    )
+
+    if err == sql.ErrNoRows {
+        return nil, nil
+    }
+    if err != nil {
+        return nil, err
+    }
+
+    return user, nil
+}
+
 func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
     user := &models.User{}
     query := `
@@ -63,36 +85,6 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
     return user, nil
 }
 
-func (r *UserRepository) GetAll(ctx context.Context) ([]models.User, error) {
-    query := `
-        SELECT id, username, email, created_at, updated_at
-        FROM users
-        ORDER BY id`
-
-    rows, err := r.db.QueryContext(ctx, query)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
-
-    var users []models.User
-    for rows.Next() {
-        var user models.User
-        err := rows.Scan(
-            &user.ID,
-            &user.Username,
-            &user.Email,
-            &user.CreatedAt,
-            &user.UpdatedAt,
-        )
-        if err != nil {
-            return nil, err
-        }
-        users = append(users, user)
-    }
-
-    return users, nil
-}
 
 func (r *UserRepository) Update(ctx context.Context, id string, user *models.User) error {
     query := `
@@ -118,25 +110,5 @@ func (r *UserRepository) Update(ctx context.Context, id string, user *models.Use
     if err != nil {
         return fmt.Errorf("invalid user ID: %v", err)
     }
-    return nil
-}
-
-func (r *UserRepository) Delete(ctx context.Context, id string) error {
-    query := `DELETE FROM users WHERE id = $1`
-
-    result, err := r.db.ExecContext(ctx, query, id)
-    if err != nil {
-        return err
-    }
-
-    rowsAffected, err := result.RowsAffected()
-    if err != nil {
-        return err
-    }
-
-    if rowsAffected == 0 {
-        return errors.New("user not found")
-    }
-
     return nil
 }
