@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
-	"strconv"
 	"twitter-clone-api/internal/models"
+
+	"github.com/google/uuid"
 )
 
 type UserRepository struct {
@@ -21,15 +21,18 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
     query := `
-        INSERT INTO users (username, email, password, created_at, updated_at)
-        VALUES ($1, $2, $3, NOW(), NOW())
-        RETURNING id, created_at, updated_at`
+        INSERT INTO users (user_id, username, email, password, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, NOW(), NOW())
+        RETURNING user_id, created_at, updated_at`
+
+    userID := uuid.New().String()
 
     err := r.db.QueryRowContext(ctx, query,
+        userID,
         user.Username,
         user.Email,
         user.Password,
-    ).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
+    ).Scan(&user.UserID, &user.CreatedAt, &user.UpdatedAt)
 
     if err != nil {
         return err
@@ -60,15 +63,15 @@ func (r *UserRepository) GetByEmailOrUsername(ctx context.Context, email string,
     return user, nil
 }
 
-func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
+func (r *UserRepository) GetByUserID(ctx context.Context, userID string) (*models.User, error) {
     user := &models.User{}
     query := `
-        SELECT id, username, email, created_at, updated_at
+        SELECT user_id, username, email, created_at, updated_at
         FROM users
-        WHERE id = $1`
+        WHERE user_id = $1`
 
-    err := r.db.QueryRowContext(ctx, query, id).Scan(
-        &user.ID,
+    err := r.db.QueryRowContext(ctx, query, userID).Scan(
+        &user.UserID,
         &user.Username,
         &user.Email,
         &user.CreatedAt,
@@ -86,17 +89,17 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*models.User, 
 }
 
 
-func (r *UserRepository) Update(ctx context.Context, id string, user *models.User) error {
+func (r *UserRepository) Update(ctx context.Context, userID string, user *models.User) error {
     query := `
         UPDATE users
         SET username = $1, email = $2, updated_at = NOW()
-        WHERE id = $3
+        WHERE user_id = $3
         RETURNING created_at, updated_at`
 
     err := r.db.QueryRowContext(ctx, query,
         user.Username,
         user.Email,
-        id,
+        userID,
     ).Scan(&user.CreatedAt, &user.UpdatedAt)
 
     if err == sql.ErrNoRows {
@@ -106,9 +109,5 @@ func (r *UserRepository) Update(ctx context.Context, id string, user *models.Use
         return err
     }
 
-    user.ID, err = strconv.Atoi(id)
-    if err != nil {
-        return fmt.Errorf("invalid user ID: %v", err)
-    }
     return nil
 }

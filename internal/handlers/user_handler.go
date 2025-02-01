@@ -35,8 +35,8 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
     if err := h.service.Create(r.Context(), &user); err != nil {
         switch err.Error() {
-        case "userAlreadyExists":
-            Error(w, http.StatusBadRequest, "userAlreadyExists")
+        case "userAlreadyExist":
+            Error(w, http.StatusBadRequest, "userAlreadyExist")
         default:
             Error(w, http.StatusInternalServerError, err.Error())
         }
@@ -47,9 +47,9 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
-    id := chi.URLParam(r, "id")
+    userID := chi.URLParam(r, "userID")
 
-    user, err := h.service.GetByID(r.Context(), id)
+    user, err := h.service.GetByUserID(r.Context(), userID)
     if err != nil {
         Error(w, http.StatusNotFound, "User not found")
         return
@@ -60,7 +60,7 @@ func (h *UserHandler) GetOne(w http.ResponseWriter, r *http.Request) {
 
 
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
-    id := chi.URLParam(r, "id")
+    userID := chi.URLParam(r, "userID")
 
     var user models.User
     if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -69,7 +69,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
     }
     defer r.Body.Close()
 
-    if err := h.service.Update(r.Context(), id, &user); err != nil {
+    if err := h.service.Update(r.Context(), userID, &user); err != nil {
         Error(w, http.StatusInternalServerError, err.Error())
         return
     }

@@ -9,12 +9,13 @@ import (
 // User représente un utilisateur dans notre système
 // Les tags `json:"..."` définissent comment les champs seront sérialisés en JSON
 type User struct {
-    ID        int       `json:"id"`
+    ID        int       `json:"-"`
+    UserID    string    `json:"userId"`
     Username  string    `json:"username"`
     Email     string    `json:"email"`
     Password  string    `json:"-"` 
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+    CreatedAt time.Time `json:"createdAt"`
+    UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type CreateUserRequest struct {

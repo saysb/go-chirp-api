@@ -25,7 +25,7 @@ func (s *UserService) Create(ctx context.Context, user *models.User) error {
         return err
     }
     if existingUser != nil {
-        return errors.New("userAlreadyExists")
+        return errors.New("userAlreadyExist")
     }
     newPassword, err := password.HashPassword(user.Password)
     if err != nil {
@@ -35,11 +35,11 @@ func (s *UserService) Create(ctx context.Context, user *models.User) error {
     return s.repo.Create(ctx, user)
 }
 
-func (s *UserService) GetByID(ctx context.Context, id string) (*models.User, error) {
-    return s.repo.GetByID(ctx, id)
+func (s *UserService) GetByUserID(ctx context.Context, userID string) (*models.User, error) {
+    return s.repo.GetByUserID(ctx, userID)
 }
 
 
-func (s *UserService) Update(ctx context.Context, id string, user *models.User) error {
-    return s.repo.Update(ctx, id, user)
+func (s *UserService) Update(ctx context.Context, userID string, user *models.User) error {
+    return s.repo.Update(ctx, userID, user)
 }
